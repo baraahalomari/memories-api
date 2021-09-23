@@ -13,18 +13,19 @@ const postRouter= require('./routes/posts.js');
 app.use(bodyParser.json({limit:"30mb",extended:true}));
 app.use(bodyParser.urlencoded({limit:"30mb",extended:true}));
 app.use(cors());
-app.use('/post',postRouter);
 
 app.get('/',(req,res)=>{
   res.send('Hello World')
 });
+app.use('/post',postRouter);
 
-const PORT = process.env.PORT || 3001;
+
+
+
 
 mongoose.connect(process.env.CONNECTION_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-.then (()=> app.listen(PORT, () => console.log(`Server started on ${PORT}`)))
+.then (()=> app.listen(process.env.PORT, () => console.log(`Server started on ${process.env.PORT}`)))
 .catch((err)=> console.log(err.message))
-mongoose.set('useFindAndModify', false);
