@@ -27,3 +27,4 @@ mongoose.connect(process.env.CONNECTION_URL, {
 })
 .then (()=> app.listen(PORT, () => console.log(`Server started on ${PORT}`)))
 .catch((err)=> console.log(err.message))
+mongoose.set('useFindAndModify', false);
