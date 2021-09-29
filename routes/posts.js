@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 
 const router = express.Router();
 
-
+const auth = require('../middleware/auth')
 
 
 const getPosts = async (req, res) => {
@@ -19,10 +19,9 @@ const getPosts = async (req, res) => {
 
 const createPosts = async (req, res) => {
   const post = req.body;
-  const newPost = new PostMessage(post);
+  const newPost = new PostMessage({ ...post, creator: req.userId, createdAt: new Date().toISOString() });
 
   try {
-    console.log(req.body);
     await newPost.save();
     res.status(201).json(newPost);
   } catch (error) {
@@ -49,18 +48,25 @@ const deletePost = async (req, res) => {
 
 const likePost = async (req, res) => {
   const { id } = req.params;
+  if (!req.userId) return res.status(400).json({ message: 'user not authentication' });
   if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send('No post with this id');
   const post = await PostMessage.findById(id);
-  const updatedPost = await PostMessage.findByIdAndUpdate(id, { likes: post.likes + 1 }, { new: true });
+  const index = post.likes.findIndex((id) => id === String(req.userId));
+  if (index === -1) {
+    post.likes.push(req.userId);
+  } else {
+    post.likes = post.likes.filter((id) => id !== String(req.userId));
+  }
+  const updatedPost = await PostMessage.findByIdAndUpdate(id, post, { new: true });
   res.json(updatedPost)
 }
 
 
 router.get('/', getPosts)
-router.post('/', createPosts)
-router.put('/:id', updatePost)
-router.delete('/:id', deletePost)
-router.put('/:id/like', likePost)
+router.post('/', auth, createPosts)
+router.put('/:id', auth, updatePost)
+router.delete('/:id', auth, deletePost)
+router.put('/:id/like', auth, likePost)
 
 
 module.exports = router;

@@ -1,15 +1,16 @@
 'use strict';
 const mongoose = require('mongoose');
 
-const postSchema =  mongoose.Schema({
-  title: {type:String,required:true},
-  message: {type:String,required:true},
-  creator: {type:String,required:true},
-  selectedFile: {type:String},
+const postSchema = mongoose.Schema({
+  title: { type: String, required: true },
+  message: { type: String, required: true },
+  name : String,
+  creator: { type: String },
+  selectedFile: { type: String },
   tags: [String],
   likes: {
-    type: Number,
-    default: 0
+    type: [String],
+    default: []
   },
   createdAt: {
     type: Date,
@@ -18,4 +19,4 @@ const postSchema =  mongoose.Schema({
 })
 
 const postMessage = mongoose.model('postMessage', postSchema);
-module.exports=postMessage;
+module.exports = postMessage;
