@@ -4,15 +4,42 @@ const mongoose = require('mongoose');
 
 const router = express.Router();
 
-const auth = require('../middleware/auth')
+const auth = require('../middleware/auth');
 
+const getPost = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const post = await PostMessage.findById(id);
+    res.status(200).json(post);
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 const getPosts = async (req, res) => {
+  const { page } = req.query;
   try {
-    const postMessage = await PostMessage.find();
-    res.status(200).json(postMessage)
+    const LIMIT = 8;
+    const startIndex = (Number(page) - 1) * LIMIT
+    const total = await PostMessage.countDocuments({});
+
+    const posts = await PostMessage.find().sort({ _id: -1 }).limit(LIMIT).skip(startIndex);
+    res.status(200).json({ data: posts, currentPage: Number(page), numberOfPages: Math.ceil(total / LIMIT) });
   } catch (error) {
     res.status(404).json({ message: error.message })
+  }
+}
+
+const fetchPostBySearchQuery = async (req, res) => {
+  const { searchQuery, tags } = req.query;
+  console.log(searchQuery, tags)
+  try {
+    const title = new RegExp(searchQuery, 'i');
+    const post = await PostMessage.find({ $or: [{ title }, { tags: { $in: tags.split(',') } }] });
+    console.log(post)
+    res.json({ data: post });
+  } catch (error) {
+    console.log(error)
   }
 }
 
@@ -61,8 +88,9 @@ const likePost = async (req, res) => {
   res.json(updatedPost)
 }
 
-
+router.get('/:id', getPost)
 router.get('/', getPosts)
+router.get('/search', fetchPostBySearchQuery)
 router.post('/', auth, createPosts)
 router.put('/:id', auth, updatePost)
 router.delete('/:id', auth, deletePost)
