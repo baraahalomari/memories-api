@@ -6,12 +6,9 @@ const userRouter = express.Router();
 const jwt = require('jsonwebtoken');
 
 
-
-
 const signin = async(req, res) =>{
 
   const { email, password } = req.body;
-
   try {
     const existingUser = await User.findOne({ email });
     if (!existingUser) return res.status(404).send('User does not exist');
